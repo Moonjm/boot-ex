@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -19,7 +21,7 @@ public class AdminService {
     public List<UserRetVO> getUsers() {
         return memberRepository.findBy();
     }
-    public boolean saveUser(User user) {
-
+    public void saveUser(User user)  {
+        memberRepository.save(user);
     }
 }

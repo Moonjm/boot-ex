@@ -26,6 +26,8 @@ public class User implements UserDetails {
     private String password;
     @Column
     private String authority;
+    @Column
+    private String refreshToken;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

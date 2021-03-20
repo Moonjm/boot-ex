@@ -22,6 +22,11 @@ import java.util.List;
 @Component
 public class JwtTokenProvider {
     private String secretKey = "secret_key";
+    public final static long TOKEN_VALIDATION_SECOND = 1000L * 60 * 10;
+    public final static long REFRESH_TOKEN_VALIDATION_SECOND = 1000L * 60 * 60 * 24 * 2;
+    final static public String ACCESS_TOKEN_NAME = "accessToken";
+    final static public String REFRESH_TOKEN_NAME = "refreshToken";
+
 
     private final MemberService userDetailsService;
 
@@ -32,23 +37,28 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(String userPk, String role) {
+    public String createToken(String userPk, String role, long expireTime) {
         Claims claims = Jwts.claims().setSubject(userPk);
         // claim : JWT payload 에 저장되는 정보단위
         List<String> roles = new ArrayList<>();
         roles.add(role);
         claims.put("roles", roles); // 정보는 key / value 쌍으로 저장
-        Date now = new Date();
-        //토큰 유효시간 30분
-        long tokenValidTime = 30 * 60 * 1000L;
         return Jwts.builder()
                 .setClaims(claims) // 정보 저장
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + tokenValidTime)) // set Expire Time
+                .setIssuedAt(new Date(System.currentTimeMillis())) // 토큰 발행 시간 정보
+                .setExpiration(new Date(System.currentTimeMillis() + expireTime)) // set Expire Time
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 // 사용할 암호화 알고리즘과
                 // signature에 들어갈 secret값 세팅
                 .compact();
+    }
+
+    public String createAccessToken(String id, String role) {
+        return this.createToken(id, role, TOKEN_VALIDATION_SECOND);
+    }
+
+    public String createRefreshToken(String id, String role) {
+        return this.createToken(id, role, REFRESH_TOKEN_VALIDATION_SECOND);
     }
 
     // JWT 토큰에서 인증 정보 조회
@@ -62,9 +72,8 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // Request의 Header에서 token 값을 가져옴. "X-AUTH-TOKEN" : "TOKEN값'
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
+    public String getToken(HttpServletRequest request, String key) {
+        return request.getHeader(key);
     }
 
     // 토큰의 유효성 + 만료일자 확인

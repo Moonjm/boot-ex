@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<User, Long> {
     Optional<User> findById(String id);
     List<UserRetVO> findBy();
+
 }
