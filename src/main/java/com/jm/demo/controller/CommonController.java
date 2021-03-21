@@ -2,7 +2,10 @@ package com.jm.demo.controller;
 
 import com.jm.demo.config.JwtTokenProvider;
 import com.jm.demo.repository.MemberRepository;
+import com.jm.demo.vo.LoginVO;
+import com.jm.demo.vo.ReturnVO;
 import com.jm.demo.vo.User;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,14 +26,19 @@ public class CommonController {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+
     @PostMapping("/login")
-    public Map<String, String> login(
-            @RequestBody Map<String, String> user,
+    @ApiOperation(value="로그인", notes = "성공시 jwt 토큰을 헤더에 넣어서 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "로그인 성공")
+    })
+    public ReturnVO login(
+            @RequestBody LoginVO user,
             HttpServletResponse res
     ) {
-        Map<String, String> ret = new HashMap<>();
-        User member = memberRepository.findById(user.get("id")).orElseThrow(() -> new IllegalArgumentException("가입되지 않은 아이디입니다."));
-        if(!passwordEncoder.matches(user.get("password"), member.getPassword())) {
+        ReturnVO ret = new ReturnVO();
+        User member = memberRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("가입되지 않은 아이디입니다."));
+        if(!passwordEncoder.matches(user.getPassword(), member.getPassword())) {
             throw new IllegalArgumentException("잘못된 비밀번호입니다.");
         }else {
             res.setHeader(JwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.createAccessToken(member.getUsername(), member.getAuthority()));
@@ -39,7 +47,8 @@ public class CommonController {
             member.setRefreshToken(refreshToken);
             memberRepository.save(member);
         }
-        ret.put("result", "success");
+        ret.setResult("success");
+        ret.setMessage("성공");
         return ret;
     }
 

@@ -22,7 +22,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**");
+        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**", "/v2/api-docs", "/configuration/ui","/swagger-resources/**",
+                "/configuration/security","/swagger-ui.html", "/webjars/**","/swagger/**");
         // static 디렉터리의 하위 파일 목록은 인증 무시(통과)
     }
 
