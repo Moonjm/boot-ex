@@ -6,9 +6,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ReturnVO {
-    @ApiModelProperty(example = "success")
-    private String result;
+public class EmptyResponse extends BasicResponse {
     @ApiModelProperty(example = "성공")
     private String message;
+
+    public EmptyResponse(String message) {
+        this.message = message;
+    }
 }
